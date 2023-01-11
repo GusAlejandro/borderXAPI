@@ -1,6 +1,7 @@
 jwt-key
 jwt-key.pub
 app_config.py
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

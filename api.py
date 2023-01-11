@@ -1,6 +1,6 @@
 from flask import Flask, make_response, request, g, jsonify
 from flask_cors import CORS
-from model import Base, User
+from model import Base, User, Post
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
@@ -12,9 +12,8 @@ import psycopg2
 from utilities import TokenType, access_token_required, refresh_token_required
 
 # TODO: Implement Refresh Refresh token endpoint
-# TODO: refresh_token_required
-# TODO: Create sepearate repo for user auth framework 
 # TODO: Implment photo upload functionality 
+# TODO: Implement text post upload functionality
 
 db_engine: Engine = create_engine('postgresql+psycopg2://dev:' + config['db_password'] + '\@localhost:5432/dev')
 conn = psycopg2.connect("host=localhost dbname=dev user=dev password=" + config['db_password'] + " port=5432")
@@ -136,8 +135,25 @@ def login_user():
 
 
 @app.route('/post',methods=['POST'])
+@access_token_required
 def post_update():
-    return None 
+    with Session(db_engine) as session: 
+        # fetch current user  
+        curr_user: User = session.query(User).filter(User.id == g.user).first()
+
+        new_post: Post = Post(curr_user)
+
+        # TODO: add in some schema checking later  
+        new_post.caption = request.get_json()['text']
+        session.add(new_post)
+
+        print("is the user in the session: " + str(curr_user in session))
+
+        session.commit()
+
+        return make_response({"status":"new post made sucessfully"}, 200)
+    
+
 
 @app.route('/feed', methods=['GET'])
 def get_feed():
