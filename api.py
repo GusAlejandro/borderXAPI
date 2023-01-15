@@ -1,5 +1,5 @@
 from flask import make_response, request, g
-from model import Base, User, Post
+from model import User, Post
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from schema import UserSchema, CredentialsSchema
@@ -13,7 +13,7 @@ from application import create_app
 # TODO: Implment photo upload functionality 
 # TODO: Implement text post upload functionality
 
-app = create_app(config)
+app, db_engine = create_app(config)
 user_schema = UserSchema()
 creds_schema = CredentialsSchema()
 
@@ -129,23 +129,23 @@ def login_user():
 @app.route('/post',methods=['POST'])
 @access_token_required
 def post_update():
+    # TODO: add in some schema checking later, we can avoid db interaction if we dont have valid input
+    caption: str = request.get_json()['text']
+
     with Session(db_engine) as session: 
         # fetch current user  
         curr_user: User = session.query(User).filter(User.id == g.user).first()
+        new_post: Post = Post()
 
-        new_post: Post = Post(curr_user)
+        curr_user.posts.append(new_post)
 
-        # TODO: add in some schema checking later  
-        new_post.caption = request.get_json()['text']
+        new_post.caption = caption
         session.add(new_post)
-
-        print("is the user in the session: " + str(curr_user in session))
 
         session.commit()
 
         return make_response({"status":"new post made sucessfully"}, 200)
     
-
 
 @app.route('/feed', methods=['GET'])
 def get_feed():

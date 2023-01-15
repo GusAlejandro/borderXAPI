@@ -14,14 +14,15 @@ class User(Base):
     id = Column(String, primary_key=True)
     username = Column(String, unique=True)
     password = Column(LargeBinary)
-    posts = relationship('Post', backref='user')
-
-
+    posts = relationship('Post', back_populates='user')
 
     def __init__(self, username: str, raw_password: str) -> None:
         self.username = username
         self.id = str(uuid.uuid4())
         self.password = User.hash_password(raw_password)
+
+    def __str__(self) -> str:
+        return 'User id: ' + self.id + ' username: ' + self.username
 
     @staticmethod
     def hash_password(raw_password: str) -> LargeBinary:
@@ -71,16 +72,15 @@ class User(Base):
 class Post(Base):
     __tablename__ = 'post'
     user_id = Column(String, ForeignKey("user.id"))
-    user = relationship("User") # this is the bidirectional RL that points back to the parent 
+    user = relationship("User", back_populates='posts') # this is the bidirectional RL that points back to the parent 
     id = Column(String, primary_key=True)
     caption = Column(String)
     media = Column(String)
     upvotes = Column(Integer)
 
-    def __init__(self, user):
+    def __init__(self):
         self.upvotes = 0
         self.id = str(uuid.uuid4())
-        self.user.append(user)
 
 
         

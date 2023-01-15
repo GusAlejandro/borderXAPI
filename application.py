@@ -10,5 +10,5 @@ def create_app(config_obj: dict):
     Base.metadata.create_all(db_engine)
     app = Flask(__name__)
     CORS(app)
-    return app
+    return app, db_engine
 
