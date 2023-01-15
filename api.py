@@ -1,27 +1,19 @@
-from flask import Flask, make_response, request, g, jsonify
-from flask_cors import CORS
+from flask import make_response, request, g
 from model import Base, User, Post
-from sqlalchemy import create_engine
-from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from schema import UserSchema, CredentialsSchema
 from marshmallow import exceptions
 from app_config import config
-import psycopg2
 from utilities import TokenType, access_token_required, refresh_token_required
+
+from application import create_app
 
 # TODO: Implement Refresh Refresh token endpoint
 # TODO: Implment photo upload functionality 
 # TODO: Implement text post upload functionality
 
-db_engine: Engine = create_engine('postgresql+psycopg2://dev:' + config['db_password'] + '\@localhost:5432/dev')
-conn = psycopg2.connect("host=localhost dbname=dev user=dev password=" + config['db_password'] + " port=5432")
-
-Base.metadata.create_all(db_engine)
-
-app = Flask(__name__)
-CORS(app)
+app = create_app(config)
 user_schema = UserSchema()
 creds_schema = CredentialsSchema()
 
